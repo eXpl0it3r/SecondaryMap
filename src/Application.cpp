@@ -7,9 +7,14 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/VideoMode.hpp>
 
+#include <sstream>
+#include <iostream>
+
 Application::Application() :
 	m_window(sf::VideoMode(1024, 768), "Secondary Map")
 {
+	m_window.setFramerateLimit(60);
+
 	// Create our TCP listener socket.
 	m_listener = sfn::TcpListener::Create();
 
@@ -44,13 +49,29 @@ void Application::update()
 	// Dequeue any pending connections from the listener.
 	while(socket = m_listener->GetPendingConnection())
 	{
+		std::size_t received_bytes = 0;
+		std::stringstream ss;
+		char bytes[1024] = {0};
+
+		std::cout << "== ToReceive (" << static_cast<unsigned int>(socket->BytesToReceive()) << ") ======" << std::endl ;
+
+		while(socket->BytesToReceive() > received_bytes)
+		{
+			std::size_t current_bytes = socket->Receive(bytes, 1024);
+			received_bytes += current_bytes;
+
+			for(std::size_t it = 0; it < current_bytes; ++it)
+				ss << bytes[it];
+		}
+
+		std::cout<< ss.str() << std::endl << std::endl;
+
 		char response[] =
 			"HTTP/1.1 200 OK\r\n"
 			"Server: SFNUL HTTP Server\r\n"
-			"Content-Type: text/html; charset=UTF-8\r\n"
+			"Content-Type: application/json; charset=UTF-8\r\n"
 			"Connection: close\r\n\r\n"
-			"<html><head><title>SFNUL HTTP Server Page</title></head>"
-			"<body>SFNUL HTTP Server Document</body></html>\r\n\r\n";
+			"{\"status\":\"ok\"}";
 
 		// Turn of connection lingering.
 		socket->SetLinger( 0 );

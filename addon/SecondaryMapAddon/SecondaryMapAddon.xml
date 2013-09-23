@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Component xmlns="http://www.red5studios.com/"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.red5studios.com/ ../../../../schemas/component.xsd">
+	<Info
+		title="Secondary Map Addon"
+		author="DarkCisum"
+		description="Displays Firefall SIN information in an external viwer."
+		url="http://dev.my-gate.net/"
+		uiVersion="1000"
+	/>
+	<Events>
+		<Event name="ON_COMPONENT_LOAD" bind="on_component_load" />
+	</Events>
+</Component>

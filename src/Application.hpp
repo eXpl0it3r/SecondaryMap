@@ -1,17 +1,19 @@
 #pragma once
 
-#include <SFNUL/TcpListener.hpp>
-#include <SFNUL/TcpSocket.hpp>
+#include "Network.hpp"
+#include "Command.hpp"
 
-#include <Thor/Graphics/BigTexture.hpp>
 #include <Thor/Graphics/BigSprite.hpp>
+#include <Thor/Graphics/BigTexture.hpp>
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/View.hpp>
 #include <SFML/System/Vector2.hpp>
 
 #include <deque>
+#include <string>
 
 class Application
 {
@@ -20,20 +22,19 @@ public:
 
 	void run();
 
+public:
+	static const std::string VERSION;
+
 private:
-	void process_command(std::pair<std::string, std::string> command);
+	void process_command(Command command);
 
 	void update();
 	void draw();
 
 private:
-	const std::string VERSION = "0.1";
 
 	sf::RenderWindow m_window;
-	sfn::TcpListener::Ptr m_listener;
-	std::deque<sfn::TcpSocket::Ptr> m_sockets;
-
-	std::deque<std::pair<std::string, std::string>> m_commands;
+	Network m_network;
 
 	sf::Sprite m_player;
 	sf::Texture m_markers;

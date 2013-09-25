@@ -11,5 +11,9 @@ xsi:schemaLocation="http://www.red5studios.com/ ../../../../schemas/component.xs
 	/>
 	<Events>
 		<Event name="ON_COMPONENT_LOAD" bind="on_component_load" />
+		
+		<Event name="ON_MAP_MARKER_ADD" bind="on_map_marker_added" />
+		<Event name="ON_MAP_MARKER_REMOVE" bind="on_map_marker_removed" />
+		<Event name="ON_MAP_MARKER_UPDATE" bind="on_map_marker_update" />
 	</Events>
 </Component>

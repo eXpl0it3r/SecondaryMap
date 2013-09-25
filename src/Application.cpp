@@ -10,6 +10,7 @@
 #include <SFML/Window/Mouse.hpp>
 #include <SFML/Window/VideoMode.hpp>
 
+#include <deque>
 #include <iostream>
 #include <sstream>
 
@@ -33,7 +34,7 @@ Application::Application() :
 	m_player.setOrigin({16.f, 16.f});
 	m_player.setColor({0xFF, 0xC0, 0x40});
 
-	m_new_eden.loadFromFile("assets/img/0.7.1710-New-Eden-Minimap.png");
+	m_new_eden.loadFromFile("assets/img/dummy.jpg");//0.7.1710-New-Eden-Minimap.png");
 
 	m_map.setTexture(m_new_eden);
 	m_map.setOrigin({4615.f, 4610.f});

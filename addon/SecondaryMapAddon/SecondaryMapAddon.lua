@@ -19,12 +19,35 @@ local cached_url = "http://"..ip..":"..tostring(PORT).."/"..tostring(VERSION).."
 local cycle_player = nil;
 local sync_enabled = false;
 
+--------------------------------------------------
+-- Events
+--------------------------------------------------
+
 function on_component_load()
 	-- Register slash commands
 	LIB_SLASH.BindCallback({slash_list="/mapsync", description="Start syncing with Secondary Map Viewer", func=sync_toggle})
 	
 	cycle_player = Callback2.CreateCycle(send_player_data, nil);
 end
+
+function on_map_marker_added(args)
+	--log(tostring(args));
+	log(tostring(Game.GetMapMarkerInfo(args.markerId)));
+end
+
+function on_map_marker_removed(args)
+	--log(tostring(args));
+	log(tostring(Game.GetMapMarkerInfo(args.markerId)));
+end
+
+function on_map_marker_update(args)
+	--log(tostring(args));
+	log(tostring(Game.GetMapMarkerInfo(args.markerId)));
+end
+
+--------------------------------------------------
+-- UI Helper Functions
+--------------------------------------------------
 
 function sync_start()
 	sync_enabled = true;
@@ -46,6 +69,10 @@ function sync_toggle()
 	end
 end
 
+--------------------------------------------------
+-- Send Data
+--------------------------------------------------
+
 function send_player_data()
 		local data = {};
 		local player_pos = Player.GetPosition();
@@ -57,6 +84,10 @@ function send_player_data()
 		
 		issue_data("player", data);
 end
+
+--------------------------------------------------
+-- Networking
+--------------------------------------------------
 
 -- Issue an HTTP request
 function issue_data(suffix, data)

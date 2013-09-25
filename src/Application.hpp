@@ -12,7 +12,6 @@
 #include <SFML/Graphics/View.hpp>
 #include <SFML/System/Vector2.hpp>
 
-#include <deque>
 #include <string>
 
 class Application

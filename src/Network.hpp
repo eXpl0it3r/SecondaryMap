@@ -18,6 +18,7 @@ public:
 private:
 	std::string receive_request(sfn::TcpSocket::Ptr& socket);
 	void send_responde(sfn::TcpSocket::Ptr& socket);
+	void process_request(const std::string& request, std::deque<Command>& commands);
 
 private:
 	static const unsigned int BLOCK_SIZE = 1024;

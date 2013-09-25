@@ -1,5 +1,7 @@
 #include "Network.hpp"
 
+#include "Application.hpp"
+
 #include <SFNUL/IpAddress.hpp>
 #include <SFNUL/Endpoint.hpp>
 #include <SFNUL/NetworkResource.hpp>
@@ -23,47 +25,9 @@ std::deque<Command> Network::update()
 	sfn::TcpSocket::Ptr socket;
 	std::deque<Command> commands;
 
-	// Dequeue any pending connections from the listener.
+	// Dequeue any pending connections from the listener and store the socket
 	while(socket = m_listener->GetPendingConnection())
-	{
-		std::string request = receive_request(socket);
-
-#ifndef NDEBUG
-		std::cout << "== Received Request:" << request << std::endl << "==" << std::endl;
-#endif
-
-		// No empty requests - Has to start with POST header
-		if(!request.empty() && request.find("POST ") == 0)
-		{
-			// Retrieve tokens
-			std::string::size_type tokens_start = request.find("POST ") + 5;
-			std::string::size_type tokens_end = request.find(" HTTP");
-
-			std::string tokens = request.substr(tokens_start, tokens_end-tokens_start);
-
-			// Retrieve data
-			std::string::size_type data_start = request.find("\r\n\r\n") + 4;
-
-			std::string data = request.substr(data_start);
-
-#ifndef NDEBUG
-			std::cout << tokens << "-" << data << std::endl;
-#endif
-
-			// Add to the command queue
-			if(request != "" && data != "")
-				commands.emplace_back(Command{tokens, data});
-		}
-#ifndef NDEBUG
-		else
-			std::cout << "Request is either empty or not a POST request." << std::endl;
-#endif
-
-		send_responde(socket);
-
-		// Store the socket.
 		m_sockets.push_back(socket);
-	}
 
 	for(auto socket_iter = m_sockets.begin(); socket_iter != m_sockets.end(); )
 	{
@@ -72,9 +36,24 @@ std::deque<Command> Network::update()
 		if((*socket_iter)->RemoteHasShutdown() && !(*socket_iter)->BytesToSend())
 		{
 			socket_iter = m_sockets.erase(socket_iter);
+#ifndef NDEBUG
+			std::cout << "Remote shutdown!" << std::endl;
+#endif // NDEBUG
 		}
 		else
 		{
+			// New request
+			if((*socket_iter)->BytesToReceive() > 0)
+			{
+				send_responde(*socket_iter);
+				process_request(receive_request(*socket_iter), commands);
+			}
+
+			// Turn of connection lingering.
+			(*socket_iter)->SetLinger(0);
+			// Shutdown the socket for sending.
+			(*socket_iter)->Shutdown();
+
 			++socket_iter;
 		}
 	}
@@ -102,19 +81,48 @@ std::string Network::receive_request(sfn::TcpSocket::Ptr& socket)
 
 void Network::send_responde(sfn::TcpSocket::Ptr& socket)
 {
-	char response[] =
+	std::string response{
 		"HTTP/1.1 200 OK\r\n"
 		"Server: SFNUL HTTP Server\r\n"
 		"Content-Type: application/json; charset=UTF-8\r\n"
-		"Connection: close\r\n\r\n"
-		"{\"status\":\"ok\"}";
-
-	// Turn of connection lingering.
-	socket->SetLinger( 0 );
+		"Connection: Close\r\n\r\n"
+		"{\"version\":\"" + Application::VERSION + "\"}\r\n\r\n"};
 
 	// Send the HTTP response.
-	socket->Send(response, sizeof(response) - 1);
+	socket->Send(response.c_str(), response.size());
+}
 
-	// Shutdown the socket for sending.
-	socket->Shutdown();
+
+void Network::process_request(const std::string& request, std::deque<Command>& commands)
+{
+#ifndef NDEBUG
+	std::cout << "== Received Request:" << request << std::endl << "==" << std::endl;
+#endif
+
+	// No empty requests - Has to start with POST header
+	if(!request.empty() && request.find("POST ") == 0)
+	{
+		// Retrieve tokens
+		std::string::size_type tokens_start = request.find("POST ") + 5;
+		std::string::size_type tokens_end = request.find(" HTTP");
+
+		std::string tokens = request.substr(tokens_start, tokens_end-tokens_start);
+
+		// Retrieve data
+		std::string::size_type data_start = request.find("\r\n\r\n") + 4;
+
+		std::string data = request.substr(data_start);
+
+#ifndef NDEBUG
+		std::cout << tokens << "-" << data << std::endl;
+#endif
+
+		// Add to the command queue
+		if(request != "" && data != "")
+			commands.emplace_back(Command{tokens, data});
+	}
+#ifndef NDEBUG
+	else
+		std::cout << "Request is either empty or not a POST request." << std::endl;
+#endif
 }

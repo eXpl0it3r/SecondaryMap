@@ -50,6 +50,8 @@ private:
 
 	void on_mouse_enter();
 	void on_mouse_leave();
+	void on_player_rotation();
+	void on_map_rotation();
 
 private:
 	enum Icons
@@ -92,7 +94,6 @@ private:
 	const float m_sidebar_small = 30.f;
 	sfg::Desktop m_desktop;
 	sfg::Window::Ptr m_ui_window;
-	//sfg::CheckButton::Ptr m_chk_
 
 	float m_factor;
 	float m_zoom;

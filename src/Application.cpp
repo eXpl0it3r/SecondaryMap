@@ -19,7 +19,7 @@
 const std::string Application::VERSION = "0.1";
 
 Application::Application() :
-	m_window{sf::VideoMode{1024, 768}, "Secondary Map"},
+	m_window{sf::VideoMode{1024, 768}, "Secondary Map " + VERSION},
 	m_factor{2.f},
 	m_zoom{0.f},
 	m_move_view{false}
@@ -69,7 +69,7 @@ void Application::load_resources()
 		sf::err() << "Couldn't load assets/img/outpost.png" << std::endl;
 
 	m_bigtextures.emplace("map", std::shared_ptr<thor::BigTexture>(new thor::BigTexture));
-	if(!m_bigtextures["map"]->loadFromFile("assets/img/dummy.png")) //0.7.1710-New-Eden-Minimap.png"))
+	if(!m_bigtextures["map"]->loadFromFile("assets/img/0.7.1710-New-Eden-Minimap.png"))
 		sf::err() << "Couldn't load assets/img/0.7.1710-New-Eden-Minimap.png" << std::endl;
 
 	// Markers
@@ -131,11 +131,12 @@ void Application::load_resources()
 void Application::load_ui()
 {
 	m_ui_window = sfg::Window::Create(sfg::Window::BACKGROUND);
-	m_ui_window->SetAllocation(sf::FloatRect(m_window.getSize().x-m_sidebar_small, 0.f, m_sidebar_width, m_window.getSize().y));
 	m_ui_window->GetSignal(sfg::Button::OnMouseEnter).Connect(&Application::on_mouse_enter, this);
 	m_ui_window->GetSignal(sfg::Button::OnMouseLeave).Connect(&Application::on_mouse_leave, this);
 
 	m_desktop.Add(m_ui_window);
+
+	m_ui_window->SetAllocation(sf::FloatRect(m_window.getSize().x-m_sidebar_small, 0.f, m_sidebar_width, m_window.getSize().y));
 }
 
 void Application::draw_loading()

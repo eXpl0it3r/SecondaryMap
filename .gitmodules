@@ -1,0 +1,12 @@
+[submodule "extlibs/SFNUL"]
+	path = extlibs/SFNUL
+	url = https://github.com/binary1248/SFNUL.git
+[submodule "extlibs/SFML"]
+	path = extlibs/SFML
+	url = https://github.com/LaurentGomila/SFML.git
+[submodule "extlibs/SFGUI"]
+	path = extlibs/SFGUI
+	url = git://boxbox.org/SFGUI.git
+[submodule "extlibs/Thor"]
+	path = extlibs/Thor
+	url = https://github.com/Bromeon/Thor.git

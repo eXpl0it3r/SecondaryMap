@@ -25,7 +25,10 @@ local sync_enabled = false;
 
 function on_component_load()
 	-- Register slash commands
-	LIB_SLASH.BindCallback({slash_list="/mapsync", description="Start syncing with Secondary Map Viewer", func=sync_toggle});
+	LIB_SLASH.BindCallback({slash_list="/mapip", description="Set IP for Secondary Map", func=sync_ip});
+	LIB_SLASH.BindCallback({slash_list="/mapsync", description="Start syncing with Secondary Map", func=sync_toggle});
+	LIB_SLASH.BindCallback({slash_list="/mapresync", description="Resync with Secondary Map", func=sync_resync});
+	LIB_SLASH.BindCallback({slash_list="/mapclear", description="Clear all markers on the Secondary Map", func=clear_markers});
 	
 	cycle_player = Callback2.CreateCycle(send_player_data, nil);
 end
@@ -33,8 +36,6 @@ end
 function on_map_marker_added(args)
 	if args.markerId ~= nil then
 		local info = Game.GetMapMarkerInfo(args.markerId);
-	
-		log(tostring(info))
 		
 		local data = {};
 		data["state"] = "add";
@@ -100,21 +101,7 @@ function poi_markers()
 		towerTable.TowerStatus = resourceList
 		towerTable.TowerInfo = towerList
 		towerTable.zoneId = Game.GetZoneId()
-		towerTable.zoneName = Game.GetZoneInfo(Game.GetZoneId()).name
-		HTTP.IssueRequest(KILLPOST, "POST", towerTable, EchoEcho)
-		Callback2.FireAndForget(DumpTowers, nil, 120)
-
-	local data {};
-	data["state" = "add";
-	data["id"] = ;
-	data["type"] = info.markerType;
-	data["x"] = info.x;
-	data["y"] = info.y;
-	--data["z"] = info.z;
-	data["r"] = 255*info.icon_tint.r;
-	data["g"] = 255*info.icon_tint.g;
-	data["b"] = 255*info.icon_tint.b;
-	data["a"] = 255*info.icon_tint.a;]]--
+		towerTable.zoneName = Game.GetZoneInfo(Game.GetZoneId()).name]]--
 end
 
 function clear_markers()
@@ -149,11 +136,18 @@ function sync_markers()
 	send_marker_data(data);
 end
 
+function sync_ip(args)
+	if args ~= nil and args[1] ~= nil then
+		ip = args[1];
+		cached_url = "http://"..ip..":"..tostring(PORT).."/"..tostring(VERSION).."/";
+	end
+end
+
 function sync_start()
 	sync_enabled = true;
 	
 	cycle_player:Run(UPDATE_INTERVAL);
-	--clear_markers();
+	clear_markers();
 	sync_markers();
 end
 
@@ -161,6 +155,13 @@ function sync_stop()
 	sync_enabled = false;
 	
 	cycle_player:Stop();
+end
+
+function sync_resync()
+	sync_enabled = true;
+	
+	clear_markers();
+	sync_markers();
 end
 
 function sync_toggle()
@@ -202,10 +203,15 @@ function issue_retry(args)
 	if sync_enabled then
 		if not HTTP.IsRequestPending(url) then
 	
-			log(tostring(args.content));
 			HTTP.IssueRequest(url, "POST", args.content, on_send_completed)
 		else
-			callback(issue_retry, args, .5)
+			if not args.count then
+				args.count = 1;
+			end
+			
+			if args.count < 3 then
+				callback(issue_retry, args, .5)
+			end
 		end
 	end
 end
@@ -223,7 +229,6 @@ end
 function on_send_completed(args, err)
     if err then
         local errorMessage = "request to ["..err.url.."] failed. Reason: "..err.message
-        --Debug.Error(erorrMessage)
 				log(errorMessage);
     end
 end

@@ -36,23 +36,22 @@ std::deque<Command> Network::update()
 		if((*socket_iter)->RemoteHasShutdown() && !(*socket_iter)->BytesToSend())
 		{
 			socket_iter = m_sockets.erase(socket_iter);
-#ifndef NDEBUG
-			std::cout << "Remote shutdown!" << std::endl;
-#endif // NDEBUG
 		}
 		else
 		{
 			// New request
 			if((*socket_iter)->BytesToReceive() > 0)
 			{
-				send_responde(*socket_iter);
 				process_request(receive_request(*socket_iter), commands);
 			}
-
-			// Turn of connection lingering.
-			(*socket_iter)->SetLinger(0);
-			// Shutdown the socket for sending.
-			(*socket_iter)->Shutdown();
+			else
+			{
+				send_responde(*socket_iter);
+				// Turn of connection lingering.
+				(*socket_iter)->SetLinger(0);
+				// Shutdown the socket for sending.
+				(*socket_iter)->Shutdown();
+			}
 
 			++socket_iter;
 		}
@@ -63,20 +62,18 @@ std::deque<Command> Network::update()
 
 std::string Network::receive_request(sfn::TcpSocket::Ptr& socket)
 {
-	std::size_t received_bytes = 0;
-	std::stringstream ss;
+	std::string str;
 	char bytes[BLOCK_SIZE] = {0};
+	std::size_t current_bytes = 0;
 
-	while(socket->BytesToReceive() > received_bytes)
+	while((current_bytes = socket->Receive(bytes, BLOCK_SIZE)))
 	{
-		std::size_t current_bytes = socket->Receive(bytes, BLOCK_SIZE);
-		received_bytes += current_bytes;
-
-		for(std::size_t it = 0; it < current_bytes; ++it)
-			ss << bytes[it];
+		str.append(bytes, current_bytes);
 	}
 
-	return ss.str();
+	std::cout << str << std::endl << std::endl;
+
+	return str;
 }
 
 void Network::send_responde(sfn::TcpSocket::Ptr& socket)
@@ -95,9 +92,7 @@ void Network::send_responde(sfn::TcpSocket::Ptr& socket)
 
 void Network::process_request(const std::string& request, std::deque<Command>& commands)
 {
-#ifndef NDEBUG
-	std::cout << "== Received Request:" << request << std::endl << "==" << std::endl;
-#endif
+	//std::cout << "== Received Request:" << request << std::endl << "==" << std::endl;
 
 	// No empty requests - Has to start with POST header
 	if(!request.empty() && request.find("POST ") == 0)
@@ -113,16 +108,10 @@ void Network::process_request(const std::string& request, std::deque<Command>& c
 
 		std::string data = request.substr(data_start);
 
-#ifndef NDEBUG
-		std::cout << tokens << "-" << data << std::endl;
-#endif
-
 		// Add to the command queue
 		if(request != "" && data != "")
 			commands.emplace_back(Command{tokens, data});
 	}
-#ifndef NDEBUG
 	else
 		std::cout << "Request is either empty or not a POST request." << std::endl;
-#endif
 }

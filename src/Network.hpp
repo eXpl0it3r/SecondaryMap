@@ -21,7 +21,7 @@ private:
 	void process_request(const std::string& request, std::deque<Command>& commands);
 
 private:
-	static const unsigned int BLOCK_SIZE = 1024;
+	static const unsigned int BLOCK_SIZE = 8192;
 
 	sfn::TcpListener::Ptr m_listener;
 	std::deque<sfn::TcpSocket::Ptr> m_sockets;

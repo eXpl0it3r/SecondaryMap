@@ -53,10 +53,8 @@ void Command::init_tokens(const std::string& tokens)
 	// Remove the API version information
 	m_tokens.pop_front();
 
-#ifndef NDEBUG
-	for(auto& token : m_tokens)
-		std::cout << "Split: " << token << std::endl;
-#endif
+	//for(auto& token : m_tokens)
+	//	std::cout << "Split: " << token << std::endl;
 }
 
 void Command::init_data(const std::string& data)
@@ -68,10 +66,8 @@ void Command::init_data(const std::string& data)
 		sf::err() << "Failed to parse the data" << std::endl << reader.getFormattedErrorMessages() << std::endl;
 		m_failed = true;
 	}
-#ifndef NDEBUG
 	else
 	{
-		std::cout << "Parsed successfully!" << std::endl;
+		//std::cout << "Parsed successfully!" << std::endl;
 	}
-#endif
 }

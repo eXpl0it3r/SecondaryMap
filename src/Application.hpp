@@ -85,7 +85,7 @@ private:
 	std::map<std::string, std::shared_ptr<thor::BigTexture>> m_bigtextures;
 	std::map<std::string, sf::IntRect> m_icons;
 
-	std::map<int, Marker> m_markers;
+	std::map<std::string, Marker> m_markers;
 
 	sf::Sprite m_player;
 	thor::BigSprite m_map;

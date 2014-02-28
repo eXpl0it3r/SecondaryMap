@@ -9,11 +9,11 @@ require "lib/lib_Debug"
 require "lib/lib_Slash"
 
 -- Addon version
-local VERSION = 0.1
+local VERSION = 0.2
 local PORT = 3344;
 local UPDATE_INTERVAL = 2;
 
-local ip = "192.168.1.37";
+local ip = "192.168.1.42";
 local cached_url = "http://"..ip..":"..tostring(PORT).."/"..tostring(VERSION).."/";
 
 local cycle_player = nil;

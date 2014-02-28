@@ -16,7 +16,7 @@
 
 #include <cmath>
 
-const std::string Application::VERSION = "0.1";
+const std::string Application::VERSION = "0.2";
 
 Application::Application() :
 	m_window{sf::VideoMode{1024, 768}, "Secondary Map " + VERSION},
@@ -131,8 +131,8 @@ void Application::load_resources()
 void Application::load_ui()
 {
 	m_ui_window = sfg::Window::Create(sfg::Window::BACKGROUND);
-	m_ui_window->GetSignal(sfg::Button::OnMouseEnter).Connect(&Application::on_mouse_enter, this);
-	m_ui_window->GetSignal(sfg::Button::OnMouseLeave).Connect(&Application::on_mouse_leave, this);
+	m_ui_window->GetSignal(sfg::Button::OnMouseEnter).Connect(std::bind(&Application::on_mouse_enter, this));
+	m_ui_window->GetSignal(sfg::Button::OnMouseLeave).Connect(std::bind(&Application::on_mouse_leave, this));
 
 	m_desktop.Add(m_ui_window);
 
@@ -300,7 +300,7 @@ void Application::player_command(Json::Value& data)
 
 void Application::marker_command(Json::Value& data)
 {
-	std::cout << "Marker " << data["id"].asInt() << ": " << data["state"].asString() << " / " << data["type"].asInt() << " / (" << data["x"].asFloat() << ", " << data["y"].asFloat() << ")" << std::endl;
+	std::cout << "Marker " << data["id"].asString() << ": " << data["state"].asString() << " / " << data["type"].asInt() << " / (" << data["x"].asFloat() << ", " << data["y"].asFloat() << ")" << std::endl;
 
 	if(data["state"].asString() == "clear")
 	{
@@ -317,20 +317,20 @@ void Application::marker_command(Json::Value& data)
 	}
 	else if(data["state"].asString() == "add")
 	{
-		m_markers.emplace(data["id"].asInt(), marker_factory(data["type"].asInt(), sf::Color(data["r"].asInt(), data["g"].asInt(), data["b"].asInt(), data["a"].asInt()), sf::Vector2f{data["x"].asFloat()*m_factor, -data["y"].asFloat()*m_factor}));
+		m_markers.emplace(data["id"].asString(), marker_factory(data["type"].asInt(), sf::Color(data["r"].asInt(), data["g"].asInt(), data["b"].asInt(), data["a"].asInt()), sf::Vector2f{data["x"].asFloat()*m_factor, -data["y"].asFloat()*m_factor}));
 	}
 	else if(data["state"].asString() == "update")
 	{
-		auto it = m_markers.find(data["id"].asInt());
+		auto it = m_markers.find(data["id"].asString());
 
 		if(it != m_markers.end()) // Not found
 			it->second.position({data["x"].asFloat()*m_factor, -data["y"].asFloat()*m_factor});
 		else // Create it
-			m_markers.emplace(data["id"].asInt(), marker_factory(data["type"].asInt(), sf::Color(data["r"].asInt(), data["g"].asInt(), data["b"].asInt(), data["a"].asInt()), sf::Vector2f{data["x"].asFloat()*m_factor, -data["y"].asFloat()*m_factor}));
+			m_markers.emplace(data["id"].asString(), marker_factory(data["type"].asInt(), sf::Color(data["r"].asInt(), data["g"].asInt(), data["b"].asInt(), data["a"].asInt()), sf::Vector2f{data["x"].asFloat()*m_factor, -data["y"].asFloat()*m_factor}));
 	}
 	else if(data["state"].asString() == "remove")
 	{
-		auto it = m_markers.find(data["id"].asInt());
+		auto it = m_markers.find(data["id"].asString());
 
 		if(it != m_markers.end())
 			m_markers.erase(it);

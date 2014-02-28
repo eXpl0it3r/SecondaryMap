@@ -311,8 +311,8 @@ void Application::marker_command(Json::Value& data)
 	{
 		for(auto& marker : data["markers"])
 		{
-			std::cout << "MarkerId: " << marker["id"].asInt() << std::endl;
-			m_markers.emplace(marker["id"].asInt(), marker_factory(marker["type"].asInt(), sf::Color(marker["r"].asInt(), marker["g"].asInt(), marker["b"].asInt(), marker["a"].asInt()), sf::Vector2f{marker["x"].asFloat()*m_factor, -marker["y"].asFloat()*m_factor}));
+			std::cout << "MarkerId: " << marker["id"].asString() << std::endl;
+			m_markers.emplace(marker["id"].asString(), marker_factory(marker["type"].asInt(), sf::Color(marker["r"].asInt(), marker["g"].asInt(), marker["b"].asInt(), marker["a"].asInt()), sf::Vector2f{marker["x"].asFloat()*m_factor, -marker["y"].asFloat()*m_factor}));
 		}
 	}
 	else if(data["state"].asString() == "add")

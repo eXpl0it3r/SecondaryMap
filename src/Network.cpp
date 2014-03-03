@@ -25,55 +25,88 @@ std::deque<Command> Network::update()
 	sfn::TcpSocket::Ptr socket;
 	std::deque<Command> commands;
 
-	// Dequeue any pending connections from the listener and store the socket
 	while(socket = m_listener->GetPendingConnection())
-		m_sockets.push_back(socket);
-
-	for(auto socket_iter = m_sockets.begin(); socket_iter != m_sockets.end(); )
 	{
-		// Remove and thereby close all active sockets that have been
-		// remotely shut down and don't have data left to send.
-		if((*socket_iter)->RemoteHasShutdown() && !(*socket_iter)->BytesToSend())
-		{
-			socket_iter = m_sockets.erase(socket_iter);
-		}
-		else
-		{
-			// New request
-			if((*socket_iter)->BytesToReceive() > 0)
-			{
-				process_request(receive_request(*socket_iter), commands);
-			}
-			else
-			{
-				send_responde(*socket_iter);
-				// Turn of connection lingering.
-				(*socket_iter)->SetLinger(0);
-				// Shutdown the socket for sending.
-				(*socket_iter)->Shutdown();
-			}
-
-			++socket_iter;
-		}
+		// Receive request.
+		receive_request(socket, commands);
+		// Send the HTTP response.
+		send_responde(socket);
 	}
 
 	return commands;
 }
 
-std::string Network::receive_request(sfn::TcpSocket::Ptr& socket)
+void Network::receive_request(sfn::TcpSocket::Ptr& socket, std::deque<Command>& commands)
 {
-	std::string str;
-	char bytes[BLOCK_SIZE] = {0};
-	std::size_t current_bytes = 0;
+	std::string data;
+	std::string header;
+	std::string token;
+	std::string number;
+	std::string body;
 
-	while((current_bytes = socket->Receive(bytes, BLOCK_SIZE)))
+	std::size_t content_length;
+
+	bool received = false;
+
+	sf::Clock clock;
+
+	while(!socket->RemoteHasShutdown() && !received && clock.getElapsedTime() <= sf::milliseconds(TIMEOUT))
 	{
-		str.append(bytes, current_bytes);
+		while(socket->BytesToReceive() > 0)
+		{
+			char bytes[BLOCK_SIZE] = {0};
+
+			std::size_t current_bytes = 0;
+
+			while((current_bytes = socket->Receive(bytes, BLOCK_SIZE)))
+			{
+				data.append(bytes, current_bytes);
+			}
+
+			// Filter header
+			if(header.size() == 0)
+			{
+				std::size_t h_end = data.find("\r\n\r\n");
+
+				if(h_end != std::string::npos)
+				{
+					header = data.substr(0, h_end + 4);
+
+					// Filter Content-Length
+					std::stringstream ss;
+					std::string search = "Content-Length: ";
+
+					std::size_t l_begin = header.find(search) + search.size();
+					std::size_t l_end = header.find("\n", l_begin);
+
+					ss << header.substr(l_begin, l_end);
+					ss >> content_length;
+
+					// Filter token
+					std::size_t token_start = header.find("POST ") + 5;
+					std::size_t token_end = header.find(" HTTP");
+
+					token = header.substr(token_start, token_end-token_start);
+				}
+			}
+			// Filer body
+			if(body.size() == 0)
+			{
+				if(data.size() >= header.size() + content_length)
+				{
+					body = data.substr(header.size(), content_length);
+					received = true;
+
+					// Add to the command queue
+					commands.push_back(Command{token, body});
+				}
+			}
+		}
 	}
 
-	std::cout << str << std::endl << std::endl;
-
-	return str;
+	std::cout << "--=== Logging ===--" << std::endl;
+	std::cout << header << std::endl << std::endl;
+	std::cout << body << std::endl << std::endl;
 }
 
 void Network::send_responde(sfn::TcpSocket::Ptr& socket)
@@ -87,31 +120,8 @@ void Network::send_responde(sfn::TcpSocket::Ptr& socket)
 
 	// Send the HTTP response.
 	socket->Send(response.c_str(), response.size());
-}
-
-
-void Network::process_request(const std::string& request, std::deque<Command>& commands)
-{
-	//std::cout << "== Received Request:" << request << std::endl << "==" << std::endl;
-
-	// No empty requests - Has to start with POST header
-	if(!request.empty() && request.find("POST ") == 0)
-	{
-		// Retrieve tokens
-		std::string::size_type tokens_start = request.find("POST ") + 5;
-		std::string::size_type tokens_end = request.find(" HTTP");
-
-		std::string tokens = request.substr(tokens_start, tokens_end-tokens_start);
-
-		// Retrieve data
-		std::string::size_type data_start = request.find("\r\n\r\n") + 4;
-
-		std::string data = request.substr(data_start);
-
-		// Add to the command queue
-		if(request != "" && data != "")
-			commands.emplace_back(Command{tokens, data});
-	}
-	else
-		std::cout << "Request is either empty or not a POST request." << std::endl;
+	// Turn of connection lingering.
+	socket->SetLinger(0);
+	// Shutdown the socket for sending.
+	socket->Shutdown();
 }

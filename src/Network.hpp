@@ -16,12 +16,12 @@ public:
 	std::deque<Command> update();
 
 private:
-	std::string receive_request(sfn::TcpSocket::Ptr& socket);
+	void receive_request(sfn::TcpSocket::Ptr& socket, std::deque<Command>& commands);
 	void send_responde(sfn::TcpSocket::Ptr& socket);
-	void process_request(const std::string& request, std::deque<Command>& commands);
 
 private:
 	static const unsigned int BLOCK_SIZE = 8192;
+	static const unsigned int TIMEOUT = 500;
 
 	sfn::TcpListener::Ptr m_listener;
 	std::deque<sfn::TcpSocket::Ptr> m_sockets;

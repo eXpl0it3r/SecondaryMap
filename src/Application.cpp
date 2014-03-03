@@ -16,7 +16,7 @@
 
 #include <cmath>
 
-const std::string Application::VERSION = "0.2";
+const std::string Application::VERSION = "0.3";
 
 Application::Application() :
 	m_window{sf::VideoMode{1024, 768}, "Secondary Map " + VERSION},
@@ -24,7 +24,7 @@ Application::Application() :
 	m_zoom{0.f},
 	m_move_view{false}
 {
-	m_window.setFramerateLimit(30);
+	m_window.setFramerateLimit(60);
 	m_view = m_window.getDefaultView();
 	m_ui_view = m_window.getDefaultView();
 

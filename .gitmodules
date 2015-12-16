@@ -10,3 +10,6 @@
 [submodule "extlibs/Thor"]
 	path = extlibs/Thor
 	url = https://github.com/Bromeon/Thor.git
+[submodule "extlibs/jsoncpp"]
+	path = extlibs/jsoncpp
+	url = https://github.com/open-source-parsers/jsoncpp.git

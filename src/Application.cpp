@@ -4,6 +4,8 @@
 
 #include <json/json.h>
 
+#include <SFGUI/Button.hpp>
+
 #include <SFML/System/Err.hpp>
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Keyboard.hpp>

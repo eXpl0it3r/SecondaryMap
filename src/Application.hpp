@@ -8,6 +8,8 @@
 #include <Thor/Graphics/BigTexture.hpp>
 
 #include <SFGUI/SFGUI.hpp>
+#include <SFGUI/Desktop.hpp>
+#include <SFGUI/Window.hpp>
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Rect.hpp>

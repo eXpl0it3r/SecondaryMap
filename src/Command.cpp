@@ -3,6 +3,8 @@
 #include "utility.hpp"
 #include "Application.hpp"
 
+#include <SFML/System/Err.hpp>
+
 #include <iostream>
 
 Command::Command(const std::string& tokens, const std::string& data) :

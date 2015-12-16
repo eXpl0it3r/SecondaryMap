@@ -6,7 +6,7 @@
 	url = https://github.com/LaurentGomila/SFML.git
 [submodule "extlibs/SFGUI"]
 	path = extlibs/SFGUI
-	url = git://boxbox.org/SFGUI.git
+	url = https://github.com/TankOs/SFGUI.git
 [submodule "extlibs/Thor"]
 	path = extlibs/Thor
 	url = https://github.com/Bromeon/Thor.git
